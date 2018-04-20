@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.dao.IProductDao" >
+  <resultMap id="productResultMap" type="com.lyf.entity.Product" >
+ 	  <result column="p_id" property="id"/>
+	  <result column="name" property="name"/>
+	  <result column="price" property="price"/>
+	  <result column="stock" property="stock"/>
+	  <result column="proPic" property="proPic"/>
+	  <result column="description" property="description"/>
+	  <result column="hot" property="hot"/>
+	  <result column="hotTime" property="hotTime"/>
+      <result column="specialPrice" property="specialPrice"/>
+      <result column="specialPriceTime" property="specialPriceTime"/> 
+      <result column="bigTypeId" property="bigTypeId"/>
+      <result column="smallTypeId" property="smallTypeId"/>
+      
+      <!-- 一对一的关系 -->  
+      <!-- property: 指的是属性的值, javaType：指的是元素的类型 -->  
+      <association property="bigType" javaType="com.lyf.entity.ProductBigType">  
+          <result column="b_id" property="id"/>
+		  <result column="b_name" property="name"/>
+		  <result column="b_remarks" property="remarks"/>
+      </association> 
+      
+      <association property="smallType" javaType="com.lyf.entity.ProductSmallType">  
+          <result column="s_id" property="id"/>
+		  <result column="s_name" property="name"/>
+		  <result column="s_remarks" property="remarks"/>
+		  <result column="bigTypeId" property="bigTypeId"/>
+		  
+      </association>  
+      
+      <collection property="orderProductList" ofType="com.lyf.entity.OrderProduct">
+            <!-- id:唯一标识
+                 property：要将订单明细的唯一标识映射到com.lyf.entity.OrderProduct的那个属性
+             -->
+            <id column="op_id" property="id"/>
+            <result column="num" property="num"/>
+            <result column="orderId" property="orderId"/>
+            <result column="productId" property="productId"/>
+        </collection>
+      
+  </resultMap>
+  <sql id="Base_Column_List" >
+  	 p.id p_id, p.name, p.price, p.stock, p.proPic, p.description, p.hot, p.hotTime,p.specialPrice, p.specialPriceTime, p.bigTypeId, p.smallTypeId,
+     b.id b_id, b.name b_name, b.remarks b_remarks,
+     s.id s_id, s.name s_name, s.remarks s_remarks, s.bigTypeId,
+     op.id op_id,op.num,op.orderId,op.productId
+    
+  </sql>
+  
+  <select id="getProductCount" resultType="java.lang.Long" parameterType="com.lyf.entity.Product" >
+    select count(*) from t_product 
+    where  1=1 
+     <if test="name != null">
+    	and title like '%' #{name} '%'
+    </if>
+  </select>
+  
+  <select id="findProductById" resultMap="productResultMap" parameterType="int" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_product p left join t_smallType s on p.smallTypeId = s.id 
+    left join t_bigType b on p.bigTypeId = b.id 
+    left join t_order_product op on p.id = op.productId 
+    where  p.id = #{id}
+  </select>
+  
+  <select id="findProductList" resultMap="productResultMap" parameterType="map" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_product p left join t_smallType s on p.smallTypeId = s.id 
+    left join t_bigType b on p.bigTypeId = b.id 
+    left join t_order_product op on p.id = op.productId 
+    where  1=1
+    <if test="name != null">
+    	and p.name like '%' #{name} '%'
+    </if>
+    <if test="pageBean != null">
+    	limit #{pageBean.start}, #{pageBean.pageSize}
+    </if>
+  </select>
+  
+  <delete id="deleteOrderById" parameterType="int" >
+    delete from t_order
+    where id = #{id}
+  </delete>
+  
+  <delete id="batchDeleteOrderById" parameterType="java.util.List">
+  		delete from t_order where id in(
+  			<foreach collection="list" item="item" separator=",">
+  				#{item}
+  			</foreach>
+  		)
+  </delete>
+  
+  <insert id="insertProduct" parameterType="com.lyf.entity.Product" >
+    insert into t_product (name, price, stock, proPic, description,hot,hotTime,specialPrice,
+                          specialPriceTime,bigTypeId,smallTypeId) 
+    values (#{name}, #{price},  #{stock}, #{proPic}, #{description},#{hot},#{hotTime},#{specialPrice},
+            #{specialPriceTime},#{bigTypeId},#{smallTypeId})
+  </insert>
+  
+  
+  <update id="updateProductById" parameterType="com.lyf.entity.Product" >
+    update t_order
+    set name = #{name},
+      price = #{price},
+      stock = #{stock},
+      proPic = #{proPic},
+      hot = #{hot},
+      hotTime = #{hotTime},
+      specialPrice = #{specialPrice},
+      specialPriceTime = #{specialPriceTime},
+      bigTypeId = #{bigTypeId},
+      smallTypeId = #{smallTypeId}
+    where id = #{id}
+  </update>
+</mapper>

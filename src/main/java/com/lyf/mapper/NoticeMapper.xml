@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.dao.INoticeDao" >
+  <resultMap id="noticeResultMap" type="com.lyf.entity.Notice" >
+ 	 <result column="id" property="id"/>
+	  <result column="title" property="title"/>
+	  <result column="content" property="content"/>
+	  <result column="createTime" property="createTime"/>
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+   id,title,content,createTime 
+  </sql>
+  
+  <select id="findNoticeById" resultMap="noticeResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_notice 
+    where  id = #{id}
+  </select>
+  
+  <delete id="deleteNoticeById" parameterType="java.lang.Integer" >
+    delete from t_notice
+    where id = #{id}
+  </delete>
+  
+  <delete id="batchDeleteNoticeById" parameterType="java.util.List">
+  		delete from t_notice where id in(
+  			<foreach collection="list" item="item" separator=",">
+  				#{item}
+  			</foreach>
+  		)
+  </delete>
+  
+  <insert id="insertNotice" parameterType="com.lyf.entity.Notice" >
+    insert into t_notice (title, content,createTime)
+    values (#{title}, #{content}, #{createTime})
+  </insert>
+  
+  <update id="updateNoticeById" parameterType="com.lyf.entity.Notice" >
+    update t_notice
+    set title = #{title},
+      content = #{content},
+      createTime = #{createTime}
+    where id = #{id}
+  </update>
+  
+  <select id="findNoticeList" resultMap="noticeResultMap" parameterType="map" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_notice 
+    where  1 = 1 
+    <if test="title != null">
+    	and title like '%' #{title} '%'
+    </if>
+    <if test="pageBean != null">
+    	limit #{pageBean.start}, #{pageBean.pageSize}
+    </if>
+  </select>
+  
+  <select id="getNoticeCount" resultType="java.lang.Long" parameterType="com.lyf.entity.Notice" >
+    select count(*) from t_notice 
+    where  1=1 
+     <if test="title != null">
+    	and title like '%' #{title} '%'
+    </if>
+  </select>
+  
+</mapper>

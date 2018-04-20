@@ -1,0 +1,11 @@
+1、jdbc.proterties的每个value后面都不能有空格，否则报错
+使用generator生成代码，pom.xml中要加入相对应的插件
+genaratorConfig.xml中不能有注释，否则运行报错
+运行generatorConfig.xml用mybatis-generator:generate命令
+Result Maps collection already contains value for 报错：mapper.xml中有重复id
+dao报空指针：mapper.xml中的namespace要跟指向对应的dao
+保错： Column 'id' in where clause is ambiguous。原因：sql语句中包含两个表。主键都为id,而没使用table.id
+报错：org.apache.ibatis.binding.BindingException: Invalid bound statement (not found): com.lyf.dao.IOrderDao.findOrderById
+原因：对应的MAPPER.XML中没有该方法
+报错：XML fragments parsed from previous mappers already contains value for com.lyf.dao.IOrderDao.Base_Column_List
+原因：存在两个namespace相同的XML。而且这两个XML中都有id="Base_Column_List"

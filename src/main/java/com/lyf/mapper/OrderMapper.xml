@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.dao.IOrderDao" >
+  <resultMap id="orderResultMap" type="com.lyf.entity.Order" >
+ 	 <id column="o_id" property="id"/>
+     <result column="orderNo" property="orderNo"/>
+     <result column="createTime" property="createTime"/>
+     <result column="cost" property="cost"/>
+     <result column="status" property="status"/>
+     <result column="userId" property="userId"/>
+      
+      <!-- 一对一的关系 -->  
+      <!-- property: 指的是属性的值, javaType：指的是元素的类型 -->  
+      <association property="user" javaType="com.lyf.entity.User">  
+          <result column="u_id" property="id"/>
+		  <result column="address" property="address"/>
+		  <result column="birthday" property="birthday"/>
+		  <result column="dentityCode" property="dentityCode"/>
+		   <result column="email" property="email"/>
+		   <result column="mobile" property="mobile"/>
+		   <result column="password" property="password"/>
+		   <result column="sex" property="sex"/>
+		   <result column="status" property="status"/>
+	      <result column="trueName" property="trueName"/>
+	      <result column="userName" property="userName"/> 
+      </association>  
+      
+      <collection property="orderProductList" ofType="com.lyf.entity.OrderProduct">
+            <!-- id:唯一标识
+                 property：要将订单明细的唯一标识映射到com.lyf.entity.OrderProduct的那个属性
+             -->
+            <id column="op_id" property="id"/>
+            <result column="num" property="num"/>
+            <result column="orderId" property="orderId"/>
+            <result column="productId" property="productId"/>
+        </collection>
+      
+  </resultMap>
+  <sql id="Base_Column_List" >
+    u.id u_id, u.address, u.birthday, u.dentitycode, u.email, u.mobile, u.password, u.sex, u.status, u.trueName, 
+    u.userName,o.id o_id, o.orderNo, o.createTime, o.cost, o.status, o.userId,op.id op_id,op.num,op.orderId,op.productId 
+  </sql>
+  
+  <select id="findOrderById" resultMap="orderResultMap" parameterType="int" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_order o left join t_user u on u.id = o.userId left join t_order_product op on o.id = op.orderId 
+    where  o.id = #{id}
+  </select>
+  
+   <select id="getOrderCount" resultType="java.lang.Long" parameterType="com.lyf.entity.Order" >
+    select count(*) from t_order o left join t_user u on o.userId = u.id
+    where  1=1 
+    <if test="orderNo != null">
+  	 	and o.orderNo like '%' #{orderNo} '%' 
+  	 </if>
+  	 <if test="user.userName != null and !user.userName.trim().equals(&quot;&quot;)">
+  	 	and u.userName like '%' #{user.userName} '%' 
+  	 </if>
+  	  <if test="user.id != null">
+  	 	and u.id = #{user.id}
+  	 </if>
+  </select>
+  
+  <select id="findOrderListByPage" resultMap="orderResultMap" parameterType="java.util.Map">
+  	select 
+  	<include refid="Base_Column_List" />
+  	 from t_order o left join t_user u on u.id = o.userId left join t_order_product op on o.id = op.orderId 
+  	 where 1=1
+  	 <if test="order.orderNo != null">
+  	 	and o.orderNo like '%' #{order.orderNo} '%' 
+  	 </if>
+  	  <if test="order.user.userName != null">
+  	 	and u.userName like '%' #{order.user.userName} '%' 
+  	 </if>
+  	 <if test="pageBean != null">
+  	 	limit #{pageBean.start}, #{pageBean.pageSize}
+  	 </if>
+  </select>
+  
+  <delete id="deleteOrderById" parameterType="int" >
+    delete from t_order
+    where id = #{id}
+  </delete>
+  
+  <delete id="batchDeleteOrderById" parameterType="java.util.List">
+  		delete from t_order where id in(
+  			<foreach collection="list" item="item" separator=",">
+  				#{item}
+  			</foreach>
+  		)
+  </delete>
+  
+  <insert id="insertOrder" parameterType="com.lyf.entity.Order" >
+    insert into t_order (orderNo, createTime, cost, status, userId) 
+    values (#{orderNo}, #{createTime},  #{cost}, #{status}, #{userId})
+  </insert>
+  
+  <update id="updateOrderByIdSelective" parameterType="com.lyf.entity.Order" >
+    update t_order
+    <set>
+      <if test="orderNo != null and !orderNo.trim().equals(&quot;&quot;)" >
+        orderNo = #{orderNo},
+      </if>
+      <if test="createTime != null" >
+        createTime = #{createTime},
+      </if>
+      <if test="cost != 0" >
+        cost = #{cost},
+      </if>
+      <if test="status != 0" >
+        status = #{status},
+      </if>
+      <if test="userId != 0" >
+        userId = #{userId},
+      </if>
+    </set>
+    where id = #{id}
+  </update>
+  
+  <update id="updateOrderById" parameterType="com.lyf.entity.Order" >
+    update t_order
+    set orderNo = #{orderNo},
+      createTime = #{createTime},
+      cost = #{cost},
+      status = #{status},
+      userId = #{userId}
+    where id = #{id}
+  </update>
+</mapper>

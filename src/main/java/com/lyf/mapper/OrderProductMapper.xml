@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.dao.IOrderProductDao" >
+  <resultMap id="orderProductResultMap" type="com.lyf.entity.OrderProduct" >
+ 	 <id column="op_id" property="id"/>
+     <result column="num" property="num"/>
+     <result column="orderId" property="orderId"/>
+     <result column="productId" property="productId"/>
+      
+      <!-- 一对一的关系 -->  
+      <!-- property: 指的是属性的值, javaType：指的是元素的类型 -->  
+      <association property="product" javaType="com.lyf.entity.Product">  
+          <result column="p_id" property="id"/>
+		  <result column="name" property="name"/>
+		  <result column="price" property="price"/>
+		  <result column="stock" property="stock"/>
+		   <result column="proPic" property="proPic"/>
+		   <result column="description" property="description"/>
+		   <result column="hot" property="hot"/>
+		   <result column="hotTime" property="hotTime"/>
+	      <result column="specialPrice" property="specialPrice"/>
+	      <result column="specialPriceTime" property="specialPriceTime"/> 
+	      <result column="bigTypeId" property="bigTypeId"/>
+	      <result column="smallTypeId" property="smallTypeId"/>
+      </association>  
+      <association property="order" javaType="com.lyf.entity.Order">  
+          <result column="o_id" property="id"/>
+		  <result column="orderNo" property="orderNo"/>
+		  <result column="createTime" property="createTime"/>
+		  <result column="cost" property="cost"/>
+		  <result column="status" property="status"/>
+		  <result column="userId" property="userId"/>
+      </association>  
+      
+  </resultMap>
+  <sql id="Base_Column_List" >
+    o.id o_id, o.orderNo, o.createTime, o.cost, o.status, o.userId,
+    op.id op_id,op.num,op.orderId,op.productId,
+    p.id p_id, p.name, p.price, p.stock, p.proPic, p.description, p.hot, p.hotTime,
+    p.specialPrice, p.specialPriceTime, p.bigTypeId, p.smallTypeId
+  </sql>
+  
+  <select id="findOrderProductById" resultMap="orderProductResultMap" parameterType="int" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_order_product op left join t_product p on op.productId = p.id left join t_order o on o.id = op.orderId 
+    where  o.id = #{id}
+  </select>
+  
+  <delete id="deleteOrderProductById" parameterType="int" >
+    delete from t_order_product
+    where id = #{id}
+  </delete>
+  
+  <delete id="batchDeleteOrderById" parameterType="java.util.List">
+  		delete from t_order where id in(
+  			<foreach collection="list" item="item" separator=",">
+  				#{item}
+  			</foreach>
+  		)
+  </delete>
+  
+  <insert id="insertOrderProduct" parameterType="com.lyf.entity.OrderProduct" >
+    insert into t_order_product (num, orderId, productId) 
+    values (#{num}, #{orderId},  #{productId})
+  </insert>
+  
+  <update id="updateOrderByIdSelective" parameterType="com.lyf.entity.Order" >
+    update t_order
+    <set>
+      <if test="orderNo != null and !orderNo.trim().equals(&quot;&quot;)" >
+        orderNo = #{orderNo},
+      </if>
+      <if test="createTime != null" >
+        createTime = #{createTime},
+      </if>
+      <if test="cost != 0" >
+        cost = #{cost},
+      </if>
+      <if test="status != 0" >
+        status = #{status},
+      </if>
+      <if test="userId != 0" >
+        userId = #{userId},
+      </if>
+    </set>
+    where id = #{id}
+  </update>
+  
+  <update id="updateOrderById" parameterType="com.lyf.entity.Order" >
+    update t_order
+    set orderNo = #{orderNo},
+      createTime = #{createTime},
+      cost = #{cost},
+      status = #{status},
+      userId = #{userId}
+    where id = #{id}
+  </update>
+</mapper>

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.dao.IUserDao" >
+  <resultMap id="userResultMap" type="com.lyf.entity.User" >
+ 	 <result column="u_id" property="id"/>
+	  <result column="address" property="address"/>
+	  <result column="birthday" property="birthday"/>
+	  <result column="dentityCode" property="dentityCode"/>
+	   <result column="email" property="email"/>
+	   <result column="mobile" property="mobile"/>
+	   <result column="password" property="password"/>
+	   <result column="sex" property="sex"/>
+	   <result column="status" property="status"/>
+      <result column="trueName" property="trueName"/>
+      <result column="userName" property="userName"/>
+      
+      <collection property="orderList" ofType="com.lyf.entity.Order">
+            <!-- id:唯一标识
+                 property：要将订单明细的唯一标识映射到com.mybatis.entity.OrderDetail的那个属性
+             -->
+            <id column="id" property="id"/>
+            <result column="orderNo" property="orderNo"/>
+            <result column="createTime" property="createTime"/>
+            <result column="cost" property="cost"/>
+            <result column="status" property="status"/>
+            <result column="userId" property="userId"/>
+        </collection>
+      
+  </resultMap>
+  <sql id="Base_Column_List" >
+    u.id u_id, u.address, u.birthday, u.dentitycode, u.email, u.mobile, u.password, u.sex, u.status, u.trueName, 
+    u.userName,o.id, o.orderNo, o.createTime, o.cost, o.status, o.userId 
+  </sql>
+  
+  <select id="findUserById" resultMap="userResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_user u left join t_order o on u.id = o.userId
+    where  u.id = #{id}
+  </select>
+  
+  <select id="findUserListByPage" resultMap="userResultMap"  parameterType="java.util.Map" >
+    select 
+    <include refid="Base_Column_List" /> 
+    from t_user u left join t_order o on u.id = o.userId
+    where  u.status = 1 
+    <if test="user.userName != null">
+    	and u.userName like '%' #{user.userName} '%' 
+    </if>
+     group by u.id
+    <if test="pageBean != null">
+    	limit #{pageBean.start}, #{pageBean.pageSize}
+    </if>
+    
+  </select>
+  
+  <select id="existUserWithUserName" resultType="int" parameterType="java.lang.String">
+  		select count(*) from t_user where userName = #{userName}
+  </select>
+  
+  <select id="login" resultMap="userResultMap" parameterType="com.lyf.entity.User">
+  		select id,userName,trueName,password from t_user 
+  		where userName = #{userName} 
+  		and password = #{password} 
+  		<if test="status = 2">
+  			and status = #{status}
+  		</if>
+  </select>
+  
+  <delete id="deleteUserById" parameterType="java.lang.Integer" >
+    delete from t_user
+    where id = #{id}
+  </delete>
+  
+  <delete id="batchDeleteUserById" parameterType="java.util.List">
+  		delete from t_user where id in(
+  			<foreach collection="list" item="item" separator=",">
+  				#{item}
+  			</foreach>
+  		)
+  </delete>
+  
+  <insert id="insertUser" parameterType="com.lyf.entity.User" >
+    insert into t_user (address, birthday, 
+      dentityCode, email, mobile, 
+      password, sex, status, 
+      trueName, userName)
+    values (#{address}, #{birthday},  #{dentityCode},
+     #{email}, #{mobile}, #{password}, #{sex}, #{status}, #{trueName}, #{userName})
+      
+  </insert>
+  
+  <insert id="insertSelective" parameterType="com.lyf.entity.User" >
+    insert into t_user
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="address != null" >
+        address,
+      </if>
+      <if test="birthday != null" >
+        birthday,
+      </if>
+      <if test="dentitycode != null" >
+        dentityCode,
+      </if>
+      <if test="email != null" >
+        email,
+      </if>
+      <if test="mobile != null" >
+        mobile,
+      </if>
+      <if test="password != null" >
+        password,
+      </if>
+      <if test="sex != null" >
+        sex,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="truename != null" >
+        trueName,
+      </if>
+      <if test="username != null" >
+        userName,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="address != null" >
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="birthday != null" >
+        #{birthday,jdbcType=TIMESTAMP},
+      </if>
+      <if test="dentitycode != null" >
+        #{dentitycode,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="mobile != null" >
+        #{mobile,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null" >
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="sex != null" >
+        #{sex,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="truename != null" >
+        #{truename,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateUserByIdSelective" parameterType="com.lyf.entity.User" >
+    update t_user
+    <set >
+      <if test="address != null and !address.trim().equals(&quot;&quot;)" >
+        address = #{address},
+      </if>
+      <if test="birthday != null" >
+        birthday = #{birthday},
+      </if>
+      <if test="dentityCode != null and !dentityCode.trim().equals(&quot;&quot;)" >
+        dentityCode = #{dentityCode},
+      </if>
+      <if test="email != null and !email.trim().equals(&quot;&quot;)" >
+        email = #{email},
+      </if>
+      <if test="mobile != null and !mobile.trim().equals(&quot;&quot;)" >
+        mobile = #{mobile},
+      </if>
+      <if test="password != null and !password.trim().equals(&quot;&quot;)" >
+        password = #{password},
+      </if>
+      <if test="sex != null and !sex.trim().equals(&quot;&quot;)" >
+        sex = #{sex},
+      </if>
+      <if test="status != null" >
+        status = #{status},
+      </if>
+      <if test="trueName != null and !trueName.trim().equals(&quot;&quot;)" >
+        trueName = #{trueName},
+      </if>
+      <if test="userName != null and !userName.trim().equals(&quot;&quot;)" >
+        userName = #{userName},
+      </if>
+    </set>
+    where id = #{id}
+  </update>
+  
+  <update id="updateUserById" parameterType="com.lyf.entity.User" >
+    update t_user
+    set address = #{address},
+      birthday = #{birthday},
+      dentityCode = #{dentityCode},
+      email = #{email},
+      mobile = #{mobile},
+      password = #{password},
+      sex = #{sex},
+      status = #{status},
+      trueName = #{trueName},
+      userName = #{userName}
+    where id = #{id}
+  </update>
+</mapper>

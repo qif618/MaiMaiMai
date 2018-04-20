@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.dao.IProductSmallTypeDao" >
+  <resultMap id="productSmallTypeResultMap" type="com.lyf.entity.ProductSmallType" >
+ 	 <result column="s_id" property="id"/>
+	 <result column="s_name" property="name"/>
+	 <result column="s_remarks" property="remarks"/>
+	 <result column="bigTypeId" property="bigTypeId"/>
+	 
+	 <association property="bigType" javaType="com.lyf.entity.ProductBigType">  
+          <result column="b_id" property="id"/>
+		  <result column="b_name" property="name"/>
+		  <result column="b_remarks" property="remarks"/>
+      </association> 
+	 <collection property="productList" ofType="com.lyf.entity.Product">
+          <result column="p_id" property="id"/>
+		  <result column="name" property="name"/>
+		  <result column="price" property="price"/>
+		  <result column="stock" property="stock"/>
+		  <result column="proPic" property="proPic"/>
+		  <result column="description" property="description"/>
+		  <result column="hot" property="hot"/>
+		  <result column="hotTime" property="hotTime"/>
+	      <result column="specialPrice" property="specialPrice"/>
+	      <result column="specialPriceTime" property="specialPriceTime"/> 
+	      <result column="bigTypeId" property="bigTypeId"/>
+	      <result column="smallTypeId" property="smallTypeId"/>
+      </collection>
+	 
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+  	 p.id p_id, p.name, p.price, p.stock, p.proPic, p.description, p.hot, p.hotTime,p.specialPrice, p.specialPriceTime, p.bigTypeId, p.smallTypeId,
+     b.id b_id, b.name b_name, b.remarks b_remarks,
+     s.id s_id, s.name s_name, s.remarks s_remarks, s.bigTypeId
+  </sql>
+  
+  <select id="findProductSmallTypeById" resultMap="productSmallTypeResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_smallType s left join t_product p on p.smallTypeId = s.id 
+    left join t_bigType b on p.bigTypeId = b.id 
+    where  s.id = #{id}
+  </select>
+  
+  <delete id="deleteProductSmallTypeById" parameterType="java.lang.Integer" >
+    delete from t_smallType
+    where id = #{id}
+  </delete>
+  
+  <delete id="batchDeleteProductSmallTypeById" parameterType="java.util.List">
+  		delete from t_smallType where id in(
+  			<foreach collection="list" item="item" separator=",">
+  				#{item}
+  			</foreach>
+  		)
+  </delete>
+  
+  <insert id="insertProductSmallType" parameterType="com.lyf.entity.ProductSmallType" >
+    insert into t_smallType (name, remarks,bigTypeId)
+    values (#{name}, #{remarks}, #{bigTypeId})
+  </insert>
+  
+  <update id="updateProductSmallTypeById" parameterType="com.lyf.entity.ProductSmallType" >
+    update t_smallType
+    set name = #{name},
+      remarks = #{remarks},
+      bigTypeId = #{bigTypeId} 
+    where id = #{id}
+  </update>
+</mapper>

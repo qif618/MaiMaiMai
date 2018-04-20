@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.dao.INewsDao" >
+  <resultMap id="newsResultMap" type="com.lyf.entity.News" >
+ 	 <result column="id" property="id"/>
+	  <result column="title" property="title"/>
+	  <result column="content" property="content"/>
+	  <result column="createTime" property="createTime"/>
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+   id,title,content,createTime 
+  </sql>
+  
+  <select id="findNewsById" resultMap="newsResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_news 
+    where  id = #{id}
+  </select>
+  
+   <select id="findNewsListByPage" resultMap="newsResultMap" parameterType="java.util.Map" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_news 
+    where  1 = 1 
+    <if test="title != null">
+    	and title like '%' #{news.title} '%'
+    </if>
+    <if test="pageBean != null">
+    	limit #{pageBean.start}, #{pageBean.pageSize}
+    </if>
+  </select>
+  
+   <select id="getNewsCount" resultType="java.lang.Long" parameterType="com.lyf.entity.News" >
+    select count(*) from t_news 
+    where  1=1 
+     <if test="title != null">
+    	and title like '%' #{title} '%'
+    </if>
+  </select>
+  
+  <delete id="deleteNewsById" parameterType="java.lang.Integer" >
+    delete from t_news
+    where id = #{id}
+  </delete>
+  
+  <delete id="batchDeleteNewsById" parameterType="java.util.List">
+  		delete from t_news where id in(
+  			<foreach collection="list" item="item" separator=",">
+  				#{item}
+  			</foreach>
+  		)
+  </delete>
+  
+  <insert id="insertNews" parameterType="com.lyf.entity.News" >
+    insert into t_News (title, content,createTime)
+    values (#{title}, #{content}, #{createTime})
+  </insert>
+  
+  <update id="updateNewsById" parameterType="com.lyf.entity.News" >
+    update t_news
+    set title = #{title},
+      content = #{content},
+      createTime = #{createTime}
+    where id = #{id}
+  </update>
+</mapper>

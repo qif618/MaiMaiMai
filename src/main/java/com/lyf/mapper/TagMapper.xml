@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.dao.ITagDao" >
+  <resultMap id="tagResultMap" type="com.lyf.entity.Tag" >
+ 	 <result column="id" property="id"/>
+	  <result column="name" property="name"/>
+	  <result column="url" property="url"/>
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+   id,name,url
+  </sql>
+  
+  <select id="findTagById" resultMap="tagResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_tag 
+    where  id = #{id}
+  </select>
+  
+  <select id="findTagListByPage" resultMap="tagResultMap" parameterType="java.util.Map" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_tag 
+    where  1=1
+    <if test="name != null">
+    	and name like '%' #{name} '%' 
+    </if>
+     <if test="pageBean != null">
+    	limit #{pageBean.start}, #{pageBean.pageSize}
+    </if>
+  </select>
+  
+  <delete id="deleteTagById" parameterType="java.lang.Integer" >
+    delete from t_tag
+    where id = #{id}
+  </delete>
+  
+  <delete id="batchDeleteTagById" parameterType="java.util.List">
+  		delete from t_tag where id in(
+  			<foreach collection="list" item="item" separator=",">
+  				#{item}
+  			</foreach>
+  		)
+  </delete>
+  
+  <insert id="insertTag" parameterType="com.lyf.entity.Tag" >
+    insert into t_tag (name, url)
+    values (#{name}, #{url})
+  </insert>
+  
+  <update id="updateTagById" parameterType="com.lyf.entity.Tag" >
+    update t_tag
+    set name = #{name},
+      url = #{url}
+    where id = #{id}
+  </update>
+</mapper>

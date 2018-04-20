@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lyf.dao.ICommentDao" >
+  <resultMap id="commentResultMap" type="com.lyf.entity.Comment" >
+ 	 <result column="id" property="id"/>
+	  <result column="content" property="content"/>
+	  <result column="nickName" property="nickName"/>
+	  <result column="createTime" property="createTime"/>
+	  <result column="replyContent" property="replyContent"/>
+	  <result column="replyTime" property="replyTime"/>
+  </resultMap>
+  <sql id="Base_Column_List" >
+   id,content,nickName,createTime,replyContent,replyTime
+  </sql>
+  
+  <select id="findCommentById" resultMap="commentResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_comment 
+    where  id = #{id}
+  </select>
+  
+   <select id="findCommentListByPage" resultMap="commentResultMap" parameterType="java.util.Map" >
+	    select 
+	    <include refid="Base_Column_List" />
+	    from t_comment 
+	    where  1 = 1 
+	    <if test="comment != null and comment.content != null">
+	    	and content like '%' #{comment.content} '%'
+	    </if>
+	    <if test="pageBean != null">
+	    	limit #{pageBean.start}, #{pageBean.pageSize}
+	    </if>
+  </select>
+  
+   <select id="getCommentCount" resultType="java.lang.Long" parameterType="com.lyf.entity.Comment" >
+    select count(*) from t_comment 
+    where  1=1 
+     <if test="content != nll">
+    	and content like '%' #{content} '%'
+    </if>
+  </select>
+  
+  <delete id="deleteCommentById" parameterType="java.lang.Integer" >
+    delete from t_comment
+    where id = #{id}
+  </delete>
+  
+  <delete id="batchDeleteCommentById" parameterType="java.util.List">
+  		delete from t_comment where id in(
+  			<foreach collection="list" item="item" separator=",">
+  				#{item}
+  			</foreach>
+  		)
+  </delete>
+  
+  <insert id="insertComment" parameterType="com.lyf.entity.Comment" >
+    insert into t_comment (content, nickName,createTime,replyContent,replyTime) 
+    values (#{content}, #{nickName}, #{createTime}, #{replyContent}, #{replyTime})
+  </insert>
+  
+  <update id="updateCommentById" parameterType="com.lyf.entity.Comment" >
+    update t_comment
+    set content = #{content},
+      nickName = #{nickName},
+      createTime = #{createTime},
+      replyContent = #{replyContent},
+      replyTime = #{replyTime}
+    where id = #{id}
+  </update>
+</mapper>
